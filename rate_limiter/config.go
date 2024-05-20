@@ -45,6 +45,7 @@ func NewConfigBuilder() *Config {
 		handler:     defaultHandler,
 		queue:       make(chan rlEntry),
 		storage:     NewHashMapStorage(),
+		logger:      logrus.StandardLogger(),
 	}
 }
 
@@ -97,30 +98,30 @@ func (rlb *Config) Storage(storage Storage) *Config {
 //	tolerance value is too high (if its bigger than the timeout value which will cause the worker to skip everything)
 //
 //	tolerance value is too high (if its bigger than the timeout value which will cause the worker to skip everything)
-func (rlb *Config) Build() (h gin.HandlerFunc, e error) {
-	if rlb.tolerance > rlb.timeout {
+func (cfg *Config) Build() (h gin.HandlerFunc, e error) {
+	if cfg.tolerance > cfg.timeout {
 
 		return
 	}
 	switch {
-	case rlb.idSelector == nil:
+	case cfg.idSelector == nil:
 		e = errors.New("`IdSelector` value cannot be nil")
-	case rlb.handler == nil:
+	case cfg.handler == nil:
 		e = errors.New("`Handler` value cannot be nil")
-	case rlb.storage == nil:
+	case cfg.storage == nil:
 		e = errors.New("`Storage` value cannot be nil")
-	case rlb.limit == 0:
+	case cfg.limit == 0:
 		e = errors.New("`Limit` value cannot be 0")
-	case rlb.timeout <= time.Second:
+	case cfg.timeout <= time.Second:
 		e = errors.New("`Timeout` cannot be less than a time.Second")
-	case rlb.tolerance < 0:
+	case cfg.tolerance < 0:
 		e = errors.New("`Tolerance` value cannot be less than zero")
-	case rlb.workerCount == 0:
+	case cfg.workerCount == 0:
 		e = errors.New("`WorkerCount` cannot be 0")
-	case rlb.tolerance > rlb.timeout:
+	case cfg.tolerance > cfg.timeout:
 		e = errors.New("tolerance value cannot be less than timeout")
 	default:
-		h = RateLimitWith(rlb)
+		h = RateLimitWith(cfg)
 	}
 	return
 }
