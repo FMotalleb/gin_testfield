@@ -49,6 +49,12 @@ func NewConfigBuilder() *Config {
 	}
 }
 
+// Logger sets the logger for the middleware.
+func (rlb *Config) Logger(logger *logrus.Logger) *Config {
+	rlb.logger = logger
+	return rlb
+}
+
 // Limit sets the rate limit for the middleware.
 func (rlb *Config) Limit(limit uint16) *Config {
 	rlb.limit = limit
