@@ -22,10 +22,10 @@ func NewRedisStorage(client *redis.Client, ttl time.Duration) RLStorage {
 
 // Decrease implements ratelimiter.Storage.
 func (r *rlRedisStorage) Decrease(id string) {
-	// err := r.client.Decr(id).Err()
-	// if err != nil {
-	// 	log.Fatalf("Failed to Decrease value: %v", err)
-	// }
+	err := r.client.Decr(id).Err()
+	if err != nil {
+		log.Fatalf("Failed to Decrease value: %v", err)
+	}
 }
 
 // Free implements ratelimiter.Storage.
