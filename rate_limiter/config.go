@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/FMotalleb/gin_testfield/rate_limiter/cleanup"
 	rlstorage "github.com/FMotalleb/gin_testfield/rate_limiter/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -138,6 +139,7 @@ func (rlb *Config) DisableFullCleanup() *Config {
 //   - Ensures that the limit is not 0.
 //   - Ensures that the timeout is greater than 1 second.
 //   - Ensures that the tolerance is not less than 0.
+//   - Ensures that the fullCleanupRotation duration is not equal or less than the timeout duration.
 //   - Ensures that the workerCount is not 0.
 //
 // If all validations pass, it creates a new rate limiting middleware handler using the RateLimitWith function.
@@ -161,43 +163,33 @@ func (cfg *Config) Build() (h gin.HandlerFunc, e error) {
 	// Use a switch statement to validate the configuration values
 	switch {
 	case cfg.idSelector == nil:
-		// If the idSelector is nil, return an error
 		e = errors.New("`IdSelector` value cannot be nil")
 	case cfg.handler == nil:
-		// If the handler is nil, return an error
 		e = errors.New("`Handler` value cannot be nil")
 	case cfg.storage == nil:
-		// If the storage is nil, return an error
 		e = errors.New("`Storage` value cannot be nil")
 	case cfg.limit == 0:
-		// If the limit is 0, return an error
 		e = errors.New("`Limit` value cannot be 0")
 	case cfg.timeout <= time.Second:
-		// If the timeout is less than or equal to 1 second, return an error
 		e = errors.New("`Timeout` cannot be less than a time.Second")
 	case cfg.tolerance < 0:
-		// If the tolerance is less than 0, return an error
 		e = errors.New("`Tolerance` value cannot be less than zero")
+	case cfg.timeout < cfg.tolerance:
+		e = errors.New("`Tolerance` value cannot be less than `Timeout`")
 	case cfg.workerCount == 0:
-		// If the workerCount is 0, return an error
 		e = errors.New("`WorkerCount` cannot be 0")
+	case cfg.fullCleanupRotation <= cfg.timeout:
+		e = errors.New("`FullCleanupRotation` cannot be less than `Timeout`")
 	default:
 		// If all configurations are valid, create and return a new rate limiting middleware handler
 		h = RateLimitWith(cfg)
 		// Start a goroutine to run the fullCleanupWorker function if rotation was set above 0
 		if cfg.fullCleanupRotation > 0 {
-			go fullCleanupWorker(cfg)
+			cleanup.
+				NewWorker(cfg.storage, cfg.timeout).
+				Start()
 		}
 	}
 
 	return
-}
-
-// fullCleanupWorker is a worker goroutine that periodically removes all entries from the storage.
-// This helps prevent potential memory leaks by freeing up resources occupied by stale entries.
-func fullCleanupWorker(cfg *Config) {
-	for {
-		time.Sleep(cfg.fullCleanupRotation)
-		cfg.storage.FreeAll()
-	}
 }
