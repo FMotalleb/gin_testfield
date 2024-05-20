@@ -16,4 +16,7 @@ type RLStorage interface {
 	// Free resets or frees the rate value associated with the given ID,
 	// typically by setting it to zero or removing it from storage.
 	Free(string)
+
+	// Free resets or frees the rate value of all IDs
+	FreeAll()
 }

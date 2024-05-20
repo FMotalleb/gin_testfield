@@ -10,6 +10,7 @@ import (
 	rlstorage "github.com/FMotalleb/gin_testfield/rate_limiter/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 		log.Fatalf("Failed to connect to Redis: %v", err)
 	}
 
-	storage := rlstorage.NewRedisStorage(client, time.Second*10)
+	storage := rlstorage.NewRedisStorage(client, time.Second*10, logrus.StandardLogger())
 
 	rl, e := ratelimiter.
 		NewConfigBuilder().
