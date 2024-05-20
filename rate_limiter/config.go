@@ -54,6 +54,12 @@ func (rlb *Config) Limit(limit uint16) *Config {
 	return rlb
 }
 
+// Limit sets the rate limit for the middleware.
+func (rlb *Config) Handler(handler gin.HandlerFunc) *Config {
+	rlb.handler = handler
+	return rlb
+}
+
 // WorkerCount sets the number of worker goroutines for the middleware.
 func (rlb *Config) WorkerCount(workers uint16) *Config {
 	rlb.workerCount = workers
@@ -99,6 +105,8 @@ func (rlb *Config) Build() (h gin.HandlerFunc, e error) {
 	switch {
 	case rlb.idSelector == nil:
 		e = errors.New("`IdSelector` value cannot be nil")
+	case rlb.handler == nil:
+		e = errors.New("`Handler` value cannot be nil")
 	case rlb.storage == nil:
 		e = errors.New("`Storage` value cannot be nil")
 	case rlb.limit == 0:
