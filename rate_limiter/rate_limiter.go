@@ -33,7 +33,9 @@ func defaultHandler(ctx *gin.Context) {
 // rlWorker is a worker goroutine that processes rate limit entries from the rlQueue.
 // It waits for the appropriate timeout duration and then decrements the rate limit counter for the user.
 func rlWorker(cfg *Config, workerID uint16) {
-	log := cfg.logger.WithField("worker_id", workerID)
+	log := cfg.logger.
+		WithField("scope", "rate-limiter").
+		WithField("worker_id", workerID)
 	log.Infoln("starting")
 	for toFree := range cfg.queue {
 		duration := toFree.releaseTime.Sub(time.Now())

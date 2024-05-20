@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	rlstorage "github.com/FMotalleb/gin_testfield/rate_limiter/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -16,7 +17,7 @@ type Config struct {
 	timeout     time.Duration
 	tolerance   time.Duration
 	idSelector  IDSelector
-	storage     Storage
+	storage     rlstorage.RLStorage
 	queue       chan rlEntry
 	handler     gin.HandlerFunc
 	logger      *logrus.Logger
@@ -44,7 +45,7 @@ func NewConfigBuilder() *Config {
 		idSelector:  defaultIdSelector,
 		handler:     defaultHandler,
 		queue:       make(chan rlEntry),
-		storage:     NewHashMapStorage(),
+		storage:     rlstorage.NewHashMapStorage(),
 		logger:      logrus.StandardLogger(),
 	}
 }
@@ -92,7 +93,7 @@ func (rlb *Config) Tolerance(tolerance time.Duration) *Config {
 }
 
 // Storage stores the request rate data.
-func (rlb *Config) Storage(storage Storage) *Config {
+func (rlb *Config) Storage(storage rlstorage.RLStorage) *Config {
 	rlb.storage = storage
 	return rlb
 }
