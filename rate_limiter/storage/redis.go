@@ -75,12 +75,12 @@ func (r *rlRedisStorage) Increase(id string) {
 	}
 }
 
-// FreeAll deletes all entries from Redis.
+// FreeAll does nothing on Redis. (its managed by ttl value)
 func (r *rlRedisStorage) FreeAll() {
-	err := r.client.FlushAll().Err()
-	if err != nil {
-		r.logger.Warnf("Failed to flush Redis database: %v", err)
-	} else {
-		r.logger.Info("Flushed Redis database")
-	}
+	// err := r.client.FlushAll().Err()
+	// if err != nil {
+	// 	r.logger.Warnf("Failed to flush Redis database: %v", err)
+	// } else {
+	// 	r.logger.Info("Flushed Redis database")
+	// }
 }
